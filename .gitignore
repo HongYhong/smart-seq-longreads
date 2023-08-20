@@ -1,0 +1,8 @@
+fastq/*
+fastq_pass/*
+fastq_hj/*
+*.gz
+*.zip
+log*
+genome/*
+*alignment*
