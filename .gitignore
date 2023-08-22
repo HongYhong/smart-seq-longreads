@@ -6,4 +6,9 @@ fastq_hj/*
 log*
 genome/*
 *alignment*
-*nohup*
+nohup*
+Homo_GRCh38_STAR
+*illumina*
+illumina_aln/*
+*Homo_GRCh38*
+*bam*

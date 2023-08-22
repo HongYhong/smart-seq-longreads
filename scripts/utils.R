@@ -44,3 +44,7 @@ makeReadDf <- function(bam) {
                                                              is.na(nbrSupplementaryAlignments), 0))
 }
 
+get_baseaccuracy = function(df){
+  (df$nbrM + df$nbrI + df$nbrD - df$NM)/(df$nbrM + df$nbrI + df$nbrD)
+}
+
