@@ -7,7 +7,7 @@
 #SBATCH --error=log.%j.err
 #SBATCH --ntasks 80
 
-for i in fastq_hj/*.fastq.gz
+for i in SGNex_fastq/*.fastq.gz
 do
-	minimap2  -t 80 -ax map-ont -N 100 -p 0.99  genome/Homo_sapiens.GRCh38.cdna.all.fa.gz $i |samtools sort -@ 80 > alignment_hj_transcriptome/`basename $i .fastq.gz`.sorted.bam
+	minimap2  -t 80 -ax map-ont -N 100 -p 0.99  genome/Homo_sapiens.GRCh38.cdna.all.fa.gz $i |samtools sort -@ 80 > SGNex_transcriptome/`basename $i .fastq.gz`.sorted.bam
 done

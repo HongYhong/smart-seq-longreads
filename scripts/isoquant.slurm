@@ -5,14 +5,15 @@
 #SBATCH -N 1
 #SBATCH --output=log.%j.out
 #SBATCH --error=log.%j.err
-#SBATCH --mem=100G
-#SBATCH --ntasks 50
+#SBATCH --mem=200G
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 50
 
-~/IsoQuant-master/isoquant.py --low_memory -t 50 --output isoquant
+/cluster/home/hongyanhong/IsoQuant-master/isoquant.py --low_memory -t 50 --output control_data/isoquant \
 --matching_strategy loose \
 --sqanti_output --model_construction_strategy sensitive_ont -d nanopore \
---bam_list MFA1912RKSv2_bamlist.txt
+--bam_list control_data/isoquant/bamlist.txt \
 --read_group file_name --complete_genedb \
---genedb annotation/GCF_012559485.2_MFA1912RKSv2_genomic.corrected.gtf \
---reference genome/GCF_012559485.2_MFA1912RKSv2_genomic.fna \
+--genedb genome/Homo_sapiens.GRCh38.109.chr.gtf \
+--reference genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa \
 --clean_start --force

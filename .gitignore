@@ -3,7 +3,7 @@ fastq_pass/*
 fastq_hj/*
 *.gz
 *.zip
-log*
+*log*
 genome/*
 *alignment*
 nohup*
@@ -12,3 +12,7 @@ Homo_GRCh38_STAR
 illumina_aln/*
 *Homo_GRCh38*
 *bam*
+data/isoquant/*
+control_data/*
+*.pdf
+*.qs

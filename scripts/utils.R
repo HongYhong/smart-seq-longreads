@@ -1,17 +1,19 @@
 readBam <- function(bamfile) {
+  require(parallel)
   bam <- readGAlignments(bamfile, use.names = TRUE,
                          param = ScanBamParam(tag = c("NM"),
                                               what = c("qname","flag", "rname", 
-                                                       "pos", "mapq")))
+                                                       "pos")))
   ops <- GenomicAlignments::CIGAR_OPS
   wdths <- GenomicAlignments::explodeCigarOpLengths(cigar(bam), ops = ops)
   keep.ops <- GenomicAlignments::explodeCigarOps(cigar(bam), ops = ops)
   explodedcigars <- IRanges::CharacterList(relist(paste0(unlist(wdths), 
                                                          unlist(keep.ops)), wdths))
-  for (opts in setdiff(GenomicAlignments::CIGAR_OPS, "=")) {
+  for (opts in setdiff(GenomicAlignments::CIGAR_OPS, c("=","P","X"))) {
     mcols(bam)[[paste0("nbr", opts)]] <- 
-      sapply(explodedcigars, function(cg) sum(as.numeric(gsub(paste0(opts, "$"), "", cg)), na.rm = TRUE))
+      unlist(mclapply(explodedcigars, function(cg) sum(as.numeric(gsub(paste0(opts, "$"), "", cg)), na.rm = TRUE),mc.cores = 5))
   }
+
   mcols(bam)$readLength <- rowSums(as.matrix(mcols(bam)[, c("nbrS", "nbrH", "nbrM", "nbrI")]))
   bam
 }
@@ -22,29 +24,13 @@ makeReadDf <- function(bam) {
                   nbrJunctions = njunc) %>%
     dplyr::select(-cigar) %>%
     dplyr::mutate(alignedLength = nbrM + nbrI) ## equivalent to readLength-nbrS-nbrH
-  
-  tmp2 <- as.data.frame(table(names(subset(bam, flag %in% c(0, 16)))))
-  if (nrow(tmp2) == 0) tmp2 <- data.frame(Var1 = tmp$read[1], Freq = 0)
-  tmp <- tmp %>% 
-    dplyr::left_join(tmp2 %>% dplyr::rename(read = Var1, nbrPrimaryAlignments = Freq))
-
-  tmp3 <- as.data.frame(table(names(subset(bam, flag %in% c(256, 272)))))
-  if (nrow(tmp3) == 0) tmp3 <- data.frame(Var1 = tmp$read[1], Freq = 0)
-  tmp <- tmp %>% 
-    dplyr::left_join(tmp3 %>% dplyr::rename(read = Var1, nbrSecondaryAlignments = Freq))
-
-  tmp4 <- as.data.frame(table(names(subset(bam, flag %in% c(2048, 2064)))))
-  if (nrow(tmp4) == 0) tmp4 <- data.frame(Var1 = tmp$read[1], Freq = 0)
-  tmp <- tmp %>% 
-    dplyr::left_join(tmp4 %>% dplyr::rename(read = Var1, nbrSupplementaryAlignments = Freq))
-  
-  tmp %>% dplyr::mutate(nbrSecondaryAlignments = replace(nbrSecondaryAlignments, 
-                                                         is.na(nbrSecondaryAlignments), 0),
-                        nbrSupplementaryAlignments = replace(nbrSupplementaryAlignments, 
-                                                             is.na(nbrSupplementaryAlignments), 0))
+  return(tmp)
 }
 
 get_baseaccuracy = function(df){
   (df$nbrM + df$nbrI + df$nbrD - df$NM)/(df$nbrM + df$nbrI + df$nbrD)
 }
 
+nblocks = function(se){
+  return(lengths(rowRanges(se)))
+}
